@@ -41,15 +41,26 @@ async function run() {
 
 
   const users = client.db("trackEase").collection("users");
+  const assets = client.db("trackEase").collection("assets")
 
 // user related Data
 app.post("/users", async(req, res)=>{
 const user = req.body
-console.log(user)
 const result = await users.insertOne(user)
 res.send(result)
 })
-
+app.get('/users/:email', async(req, res)=>{
+const email = req.params.email
+const query = {email : email}
+const result = await users.findOne(query)
+res.send(result)
+})
+// asset related api
+app.post('/add-asset', async(req, res)=>{
+  const asset = req.body
+  const result = await assets.insertOne(asset)
+  res.send(result)
+})
 
 
 
