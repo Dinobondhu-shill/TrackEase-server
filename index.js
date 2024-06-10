@@ -55,6 +55,10 @@ const query = {email : email}
 const result = await users.findOne(query)
 res.send(result)
 })
+app.get('/free-employee', async(req, res)=>{
+  const result = await users.find({company : null}).toArray()
+  res.send(result)
+})
 // asset related api
 app.post('/add-asset', async(req, res)=>{
   const asset = req.body
