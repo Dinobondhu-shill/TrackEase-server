@@ -90,7 +90,14 @@ app.put('/update-assets/:id', async(req, res)=>{
   console.log(result)
   res.send(result)
 })
-
+app.delete('/delete-asset/:id', async (req, res)=>{
+  const id = req.params.id
+  const filter = {
+    _id :new ObjectId(id)
+  }
+  const result = await assets.deleteOne(filter)
+  res.send(result)
+})
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
