@@ -61,7 +61,16 @@ app.post('/add-asset', async(req, res)=>{
   const result = await assets.insertOne(asset)
   res.send(result)
 })
-
+app.get('/assets', async(req, res)=>{
+  const result = await assets.find().toArray()
+  res.send(result)
+})
+app.get('/assets/:id', async(req, res)=>{
+  const id = req.params.id
+  const query = {_id : new ObjectId(id)}
+  const result = await assets.findOne(query)
+  res.send(result)
+})
 
 
     // Send a ping to confirm a successful connection
