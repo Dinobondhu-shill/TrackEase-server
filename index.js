@@ -71,6 +71,25 @@ app.get('/assets/:id', async(req, res)=>{
   const result = await assets.findOne(query)
   res.send(result)
 })
+app.put('/update-assets/:id', async(req, res)=>{
+
+
+  const id = req.params.id
+  const filter = {_id: new ObjectId(id)}
+  const options = {upsert:true}
+  const updatedDoc = req.body
+  const item = {
+    $set:{
+      product : updatedDoc.product,
+      quantity: updatedDoc.quantity,
+      productType: updatedDoc.productType
+    }
+  
+  }
+  const result = await assets.updateOne(filter, item, options)
+  console.log(result)
+  res.send(result)
+})
 
 
     // Send a ping to confirm a successful connection
