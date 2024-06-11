@@ -55,6 +55,14 @@ const query = {email : email}
 const result = await users.findOne(query)
 res.send(result)
 })
+// getting member list of any company
+app.get('/users/team/:company', async(req, res)=>{
+  const company = req.params.company
+  const query = {company : company}
+  const result = await users.find(query).toArray()
+  res.send(result)
+})
+// getting employee who are not afilliete with any company
 app.get('/free-employee', async(req, res)=>{
   const result = await users.find({company : null}).toArray()
   res.send(result)
