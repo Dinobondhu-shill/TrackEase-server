@@ -59,6 +59,25 @@ app.get('/free-employee', async(req, res)=>{
   const result = await users.find({company : null}).toArray()
   res.send(result)
 })
+// adding employee to the specefic team
+app.put('/add-employee/:id', async(req, res)=>{
+  const id = req.params.id
+  const filter = {_id : new ObjectId(id)}
+  const options = {upsert:true}
+  const updatedDoc = req.body
+  const item = {
+    $set:{
+      company : updatedDoc.company,
+      imageUrl2: updatedDoc.imageUrl2,
+    }
+  
+  }
+  const result = await users.updateOne(filter, item, options)
+  res.send(result)
+
+})
+
+
 // asset related api
 app.post('/add-asset', async(req, res)=>{
   const asset = req.body
@@ -91,7 +110,6 @@ app.put('/update-assets/:id', async(req, res)=>{
   
   }
   const result = await assets.updateOne(filter, item, options)
-  console.log(result)
   res.send(result)
 })
 app.delete('/delete-asset/:id', async (req, res)=>{
