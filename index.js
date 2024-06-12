@@ -96,6 +96,13 @@ app.get('/assets', async(req, res)=>{
   const result = await assets.find().toArray()
   res.send(result)
 })
+// get assets of employee requested
+app.get('/my-asset/:email', async(req, res)=>{
+const email = req.params.email
+const filter = {requesterEmail : email}
+const result = await assets.find(filter).toArray()
+res.send(result)
+})
 // get asset data for employee in the request page
 app.get('/asset/employee/:company', async(req, res)=>{
   const companyName = decodeURIComponent(req.params.company)
