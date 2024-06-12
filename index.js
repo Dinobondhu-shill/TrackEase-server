@@ -127,6 +127,28 @@ app.put('/update-assets/:id', async(req, res)=>{
   const result = await assets.updateOne(filter, item, options)
   res.send(result)
 })
+// add request for an asset by employee
+app.put('/request-for-asset/:id', async(req, res)=>{
+  const id = req.params.id
+  const filter = {
+    _id : new ObjectId(id)
+  }
+  const options = {
+    upsert : true
+  }
+  const requestedDoc = req.body
+  const item = {
+    $set:{
+      note :requestedDoc.note,
+       requestedDate : requestedDoc.requestedDate,
+        status : requestedDoc.status,
+        requesterEmail : requestedDoc.requesterEmail,
+        requesterName : requestedDoc.requesterName
+    }
+  }
+  const result = await assets.updateOne(filter, item, options)
+  res.send(result)
+})
 app.delete('/delete-asset/:id', async (req, res)=>{
   const id = req.params.id
   const filter = {
