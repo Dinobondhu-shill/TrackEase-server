@@ -96,6 +96,13 @@ app.get('/assets', async(req, res)=>{
   const result = await assets.find().toArray()
   res.send(result)
 })
+// get asset data for employee in the request page
+app.get('/asset/employee/:company', async(req, res)=>{
+  const companyName = decodeURIComponent(req.params.company)
+  const query = {company: companyName}
+  const result = await assets.find(query).toArray()
+  res.send(result)
+})
 app.get('/assets/:id', async(req, res)=>{
   const id = req.params.id
   const query = {_id : new ObjectId(id)}
