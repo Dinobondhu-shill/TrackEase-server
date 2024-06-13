@@ -42,6 +42,7 @@ async function run() {
 
   const users = client.db("trackEase").collection("users");
   const assets = client.db("trackEase").collection("assets")
+  const reqAssets = client.db("trackEase").collection("reqAssets")
 
 // user related Data
 app.post("/users", async(req, res)=>{
@@ -100,8 +101,16 @@ app.get('/assets', async(req, res)=>{
 app.get('/my-asset/:email', async(req, res)=>{
 const email = req.params.email
 const filter = {requesterEmail : email}
-const result = await assets.find(filter).toArray()
+const result = await reqAssets.find(filter).toArray()
 res.send(result)
+})
+// get all requested asset for the hr
+app.get('/requested-assets', async(req, res)=>{
+  const query = {
+    status : 'pending'
+  }
+  const result = await reqAssets.find(query).toArray()
+  res.send(result)
 })
 // get asset data for employee in the request page
 app.get('/asset/employee/:company', async(req, res)=>{
@@ -134,26 +143,36 @@ app.put('/update-assets/:id', async(req, res)=>{
   const result = await assets.updateOne(filter, item, options)
   res.send(result)
 })
+// update asset after approving asset
+app.put('/approve-asset/:id', async(req, res)=>{
+const id = req.params.id
+const query = {_id : new ObjectId(id)}
+const asset = await assets.findOne(query)
+console.log(asset)
+// const quantity = asset?.quantity
+const updateQuantity = {
+  $set:{
+    quantity : quantity - 1
+  }
+}
+const updateMainAsset = await assets.updateOne(query, updateQuantity)
+const filter = { assetId : id}
+const options = {upsert:true}
+const updatedDoc  = req.body
+const item = {
+  $set:{
+    status : updatedDoc.status,
+  }
+
+}
+const result = await reqAssets.updateOne(filter,options, item)
+res.send (updateMainAsset, result)
+})
 // add request for an asset by employee
-app.put('/request-for-asset/:id', async(req, res)=>{
-  const id = req.params.id
-  const filter = {
-    _id : new ObjectId(id)
-  }
-  const options = {
-    upsert : true
-  }
-  const requestedDoc = req.body
-  const item = {
-    $set:{
-      note :requestedDoc.note,
-       requestedDate : requestedDoc.requestedDate,
-        status : requestedDoc.status,
-        requesterEmail : requestedDoc.requesterEmail,
-        requesterName : requestedDoc.requesterName
-    }
-  }
-  const result = await assets.updateOne(filter, item, options)
+app.post('/request-for-asset', async(req, res)=>{
+  const reqAsset = req.body
+  const result = await reqAssets.insertOne(reqAsset)
+ 
   res.send(result)
 })
 app.delete('/delete-asset/:id', async (req, res)=>{
