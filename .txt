@@ -1,0 +1,9 @@
+const asset = await assets.findOne(query)
+console.log(asset)
+// const quantity = asset?.quantity
+const updateQuantity = {
+  $set:{
+    quantity : quantity - 1
+  }
+}
+const updateMainAsset = await assets.updateOne(query, updateQuantity)

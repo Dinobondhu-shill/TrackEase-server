@@ -106,6 +106,7 @@ res.send(result)
 })
 // get all requested asset for the hr
 app.get('/requested-assets', async(req, res)=>{
+  
   const query = {
     status : 'pending'
   }
@@ -144,12 +145,16 @@ app.put('/update-assets/:id', async(req, res)=>{
   res.send(result)
 })
 // update asset after approving asset
-app.put('/approve-asset/:id', async(req, res)=>{
+app.patch('/approve-asset/:id', async(req, res)=>{
 const id = req.params.id
 const query = {_id : new ObjectId(id)}
 const asset = await assets.findOne(query)
-console.log(asset)
-// const quantity = asset?.quantity
+
+const quantity = asset?.quantity
+if (quantity === undefined || quantity <= 0) {
+  res.status(400).send({ message: 'Insufficient quantity' });
+  return;
+}
 const updateQuantity = {
   $set:{
     quantity : quantity - 1
@@ -162,12 +167,28 @@ const updatedDoc  = req.body
 const item = {
   $set:{
     status : updatedDoc.status,
+    approvedDate : updatedDoc.approvedDate
   }
 
 }
-const result = await reqAssets.updateOne(filter,options, item)
-res.send (updateMainAsset, result)
+const result = await reqAssets.updateOne(filter,item, options)
+res.send ({updateMainAsset, result})
 })
+// Reject asset by hr
+app.patch('/reject-asset/:id', async(req, res)=>{
+  const id = req.params.id
+  const filter = { assetId : id}
+  const options = {upsert : true}
+  const updatedDoc  = req.body
+  const item = {
+    $set:{
+      status : updatedDoc.status
+    }
+  
+  }
+  const result = await reqAssets.updateOne(filter,item, options)
+  res.send(result)
+  })
 // add request for an asset by employee
 app.post('/request-for-asset', async(req, res)=>{
   const reqAsset = req.body
