@@ -147,9 +147,11 @@ app.put('/update-assets/:id', async(req, res)=>{
 // update asset after approving asset
 app.patch('/approve-asset/:id', async(req, res)=>{
 const id = req.params.id
-const query = {_id : new ObjectId(id)}
+const assetId = req?.body?.assetId
+console.log(assetId)
+const query = {_id : new ObjectId(assetId)}
 const asset = await assets.findOne(query)
-
+console.log(asset,assetId)
 const quantity = asset?.quantity
 if (quantity === undefined || quantity <= 0) {
   res.status(400).send({ message: 'Insufficient quantity' });
@@ -161,7 +163,7 @@ const updateQuantity = {
   }
 }
 const updateMainAsset = await assets.updateOne(query, updateQuantity)
-const filter = { assetId : id}
+const filter = { _id : new ObjectId(id)}
 const options = {upsert:true}
 const updatedDoc  = req.body
 const item = {
@@ -194,6 +196,16 @@ app.post('/request-for-asset', async(req, res)=>{
   const reqAsset = req.body
   const result = await reqAssets.insertOne(reqAsset)
  
+  res.send(result)
+})
+// requested asset delete from the employee
+app.delete('/delete-req/:id', async(req, res)=>{
+  const id = req.params.id
+  console.log(id)
+  const filter = {
+    _id :new ObjectId(id)
+  }
+  const result = await reqAssets.deleteOne(filter)
   res.send(result)
 })
 app.delete('/delete-asset/:id', async (req, res)=>{
