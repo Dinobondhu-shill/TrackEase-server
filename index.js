@@ -108,7 +108,7 @@ res.send(result)
 app.get('/requested-assets', async(req, res)=>{
   
   const query = {
-    status : 'pending'
+    status : 'pending' || 'rejected'
   }
   const result = await reqAssets.find(query).toArray()
   res.send(result)
@@ -190,6 +190,33 @@ app.patch('/reject-asset/:id', async(req, res)=>{
   }
   const result = await reqAssets.updateOne(filter,item, options)
   res.send(result)
+  })
+
+  // return data from employee
+  app.patch('/return-asset/:id', async(req, res)=>{
+    const id = req.params.id
+    const assetId = req?.body?.assetId
+    const query = {_id : new ObjectId(assetId)}
+    const asset = await assets.findOne(query)
+    const quantity = asset?.quantity
+    const updateQuantity = {
+      $set:{
+        quantity : quantity + 1
+      }
+    }
+    const updateMainAsset = await assets.updateOne(query, updateQuantity)
+    const filter = { _id : new ObjectId(id)}
+    const options = {upsert:true}
+    const updatedDoc  = req.body
+    const item = {
+      $set:{
+        status : updatedDoc.status,
+        approvedDate : ''
+      }
+    
+    }
+    const result = await reqAssets.updateOne(filter,item, options)
+    res.send ({updateMainAsset, result})
   })
 // add request for an asset by employee
 app.post('/request-for-asset', async(req, res)=>{
