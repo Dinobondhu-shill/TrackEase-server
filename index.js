@@ -97,6 +97,18 @@ app.get('/assets', async(req, res)=>{
   const result = await assets.find().toArray()
   res.send(result)
 })
+app.get('/limited-stock/:company', async(req, res)=>{
+const company = req.params.company
+const filter = {
+  company : company ,
+  quantity: { $lt: 10 }
+}
+const result = await assets.find(filter).toArray()
+if(result.length===0){
+  return res.status(404).send({ message: 'No limited stock items found for the specified company.' });
+}
+res.send(result)
+})
 // get assets of employee requested
 app.get('/my-asset/:email', async(req, res)=>{
 const email = req.params.email
@@ -124,6 +136,12 @@ app.get('/assets/:id', async(req, res)=>{
   const id = req.params.id
   const query = {_id : new ObjectId(id)}
   const result = await assets.findOne(query)
+  res.send(result)
+})
+app.get('/download-pdf/:id', async(req, res)=>{
+  const id = req.params.id
+  const query = {_id : new ObjectId(id)}
+  const result = await reqAssets.findOne(query)
   res.send(result)
 })
 app.put('/update-assets/:id', async(req, res)=>{
