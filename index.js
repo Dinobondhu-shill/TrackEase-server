@@ -100,14 +100,23 @@ app.get('/assets', async(req, res)=>{
 app.get('/limited-stock/:company', async(req, res)=>{
 const company = req.params.company
 const filter = {
-  company : company ,
+  company : company,
   quantity: { $lt: 10 }
 }
 const result = await assets.find(filter).toArray()
+
 if(result.length===0){
   return res.status(404).send({ message: 'No limited stock items found for the specified company.' });
 }
 res.send(result)
+})
+app.get('/items-statistics', async (req, res) => {
+  const returnable = await reqAssets.countDocuments({productType: 'returnable'})
+  const nonReturnable = await reqAssets.countDocuments({productType:'non-returnable'})
+  res.send({
+    returnable: returnable,
+    nonReturnable: nonReturnable,
+  });
 })
 // get assets of employee requested
 app.get('/my-asset/:email', async(req, res)=>{
