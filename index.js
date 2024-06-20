@@ -130,7 +130,7 @@ app.get('/most-requested/:companpy', async(req, res) =>{
     { $match: filter },
      {
         $group: {
-          _id: product,
+          _id: "$product",
           count: { $sum: 1 }
         }
       },
@@ -170,7 +170,8 @@ app.get('/asset/employee/:company', async(req, res)=>{
 app.get('/pending-request/:email', async(req, res) =>{
   const email = req.params.email
   const filter = {
-    requesterEmail : email
+    requesterEmail : email,
+    status:'pending'
   }
   const result = await reqAssets.find(filter).toArray()
   res.send(result)
