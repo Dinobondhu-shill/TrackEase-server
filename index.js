@@ -95,7 +95,38 @@ app.post('/add-asset', async(req, res)=>{
   res.send(result)
 })
 app.get('/assets', async(req, res)=>{
-  const result = await assets.find().toArray()
+  const filter = req.query.filter;
+  const filter2 = req.query.filter2
+  const search = req.query.search;
+  const sort = req.query.sort
+  let query = {};
+
+  if (search) {
+    query.product = { $regex: search, $options: "i" };
+  }
+
+  if (filter) {
+    if (parseInt(filter) === 1) {
+      query.quantity = { $gt: 0 };
+    } else if (parseInt(filter) === 0) {
+      query.quantity = 0;
+    }
+  }
+  if (filter2) {
+    query.productType = filter2;
+  }
+  const cursor = assets.find(query);
+
+  if (sort) {
+    const sortObj = {};
+    if (sort === 'quantity-asc') {
+      sortObj.quantity = 1; // Ascending order
+    } else if (sort === 'quantity-desc') {
+      sortObj.quantity = -1; // Descending order
+    }
+    cursor.sort(sortObj);
+  }
+  const result = await cursor.toArray()
   res.send(result)
 })
 // getting limited stock asset for hr manager homepage
