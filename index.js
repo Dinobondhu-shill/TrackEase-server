@@ -193,8 +193,23 @@ app.get('/monthly-requests/:email', async (req, res) => {
 // get assets of employee requested
 app.get('/my-asset/:email', async(req, res)=>{
 const email = req.params.email
-const filter = {requesterEmail : email}
-const result = await reqAssets.find(filter).toArray()
+const filter = req.query.filter;
+  const filter2 = req.query.filter2
+  const search = req.query.search;
+
+const query = {requesterEmail : email}
+
+if (search) {
+  query.product = { $regex: search, $options: "i" };
+}
+if(filter){
+  query.status = filter
+}
+if (filter2) {
+  query.productType = filter2;
+}
+let cursor = reqAssets.find(query);
+const result = await cursor.toArray()
 res.send(result)
 })
 // get all requested asset for the hr
@@ -218,8 +233,27 @@ app.get('/requested-assets', async(req, res)=>{
 // get asset data for employee in the request page
 app.get('/asset/employee/:company', async(req, res)=>{
   const companyName = decodeURIComponent(req.params.company)
+  const filter = req.query.filter;
+  const filter2 = req.query.filter2
+  const search = req.query.search;
   const query = {company: companyName}
-  const result = await assets.find(query).toArray()
+
+  if (search) {
+    query.product = { $regex: search, $options: "i" };
+  }
+
+  if (filter) {
+    if (parseInt(filter) === 1) {
+      query.quantity = { $gt: 0 };
+    } else if (parseInt(filter) === 0) {
+      query.quantity = 0;
+    }
+  }
+  if (filter2) {
+    query.productType = filter2;
+  }
+  let cursor = assets.find(query);
+  const result = await cursor.toArray()
   res.send(result)
 })
 // employees pending request 
