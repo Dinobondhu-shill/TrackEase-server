@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const moment = require('moment'); 
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
@@ -121,8 +122,8 @@ app.get('/items-statistics', async (req, res) => {
   });
 })
 // most requested item for hr
-app.get('/most-requested/:companpy', async(req, res) =>{
-  const company = req.params.companpy
+app.get('/most-requested/:company', async(req, res) =>{
+  const company = req.params.company
   const filter ={
     company : company
   }
@@ -142,6 +143,21 @@ app.get('/most-requested/:companpy', async(req, res) =>{
       }
     ]).toArray();
     res.send(topItems);
+})
+// monthly asset request from employee
+app.get('/monthly-requests/:email', async (req, res) => {
+  const email = req.params.email;
+  const startOfMonth = moment().startOf('month').format('YYYY-MM-DD');
+  const endOfMonth = moment().endOf('month').format('YYYY-MM-DD');
+
+  const requests = await reqAssets.find({
+    requesterEmail: email,
+    requestedDate: {
+      $gte: startOfMonth,
+      $lte: endOfMonth
+    }
+  }).sort({ requestedDate: -1 }).toArray();
+  res.send(requests)
 })
 // get assets of employee requested
 app.get('/my-asset/:email', async(req, res)=>{
