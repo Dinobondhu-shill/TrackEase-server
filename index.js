@@ -97,6 +97,7 @@ app.get('/assets', async(req, res)=>{
   const result = await assets.find().toArray()
   res.send(result)
 })
+// getting limited stock asset for hr manager homepage
 app.get('/limited-stock/:company', async(req, res)=>{
 const company = req.params.company
 const filter = {
@@ -110,6 +111,7 @@ if(result.length===0){
 }
 res.send(result)
 })
+// pie chart of returnable vs non returnable asset
 app.get('/items-statistics', async (req, res) => {
   const returnable = await reqAssets.countDocuments({productType: 'returnable'})
   const nonReturnable = await reqAssets.countDocuments({productType:'non-returnable'})
@@ -117,6 +119,29 @@ app.get('/items-statistics', async (req, res) => {
     returnable: returnable,
     nonReturnable: nonReturnable,
   });
+})
+// most requested item for hr
+app.get('/most-requested/:companpy', async(req, res) =>{
+  const company = req.params.companpy
+  const filter ={
+    company : company
+  }
+  const topItems = await reqAssets.aggregate([
+    { $match: filter },
+     {
+        $group: {
+          _id: product,
+          count: { $sum: 1 }
+        }
+      },
+        {
+        $sort: { count: -1 }
+      },
+         {
+        $limit: 4
+      }
+    ]).toArray();
+    res.send(topItems);
 })
 // get assets of employee requested
 app.get('/my-asset/:email', async(req, res)=>{
@@ -139,6 +164,15 @@ app.get('/asset/employee/:company', async(req, res)=>{
   const companyName = decodeURIComponent(req.params.company)
   const query = {company: companyName}
   const result = await assets.find(query).toArray()
+  res.send(result)
+})
+// employees pending request 
+app.get('/pending-request/:email', async(req, res) =>{
+  const email = req.params.email
+  const filter = {
+    requesterEmail : email
+  }
+  const result = await reqAssets.find(filter).toArray()
   res.send(result)
 })
 app.get('/assets/:id', async(req, res)=>{
