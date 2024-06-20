@@ -199,9 +199,18 @@ res.send(result)
 })
 // get all requested asset for the hr
 app.get('/requested-assets', async(req, res)=>{
-  
-  const query = {
-    status : 'pending' || 'rejected'
+  const search = req.query.search
+  let query = {
+    $or: [{ status: 'pending' }, { status: 'rejected' }]
+  };
+  if (search) {
+    const searchQuery = {
+      $or: [
+        { requesterEmail: { $regex: search, $options: 'i' } },
+        { requesterName: { $regex: search, $options: 'i' } }
+      ]
+    };
+    query = { $and: [query, searchQuery] };
   }
   const result = await reqAssets.find(query).toArray()
   res.send(result)
