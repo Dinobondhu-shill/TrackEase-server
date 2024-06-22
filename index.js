@@ -18,7 +18,6 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://storyforge-31907.web.app"
-
     ],
     credentials: true,
     optionsSuccessStatus: 200,
@@ -53,6 +52,13 @@ async function run() {
     // user related Data
     app.post("/users", async (req, res) => {
       const user = req.body
+      const email = user.email
+      const query = {email: email}
+      const existingUser = await users.findOne(query)
+    if(existingUser){
+      return res.send({massage:"user already exist"})
+    }
+
       const result = await users.insertOne(user)
       res.send(result)
     })
@@ -122,12 +128,15 @@ async function run() {
       const result = await assets.insertOne(asset)
       res.send(result)
     })
-    app.get('/assets', async (req, res) => {
+    app.get('/assets/:company', async (req, res) => {
+      const company = req.params.company
       const filter = req.query.filter;
       const filter2 = req.query.filter2
       const search = req.query.search;
       const sort = req.query.sort
-      let query = {};
+      let query = {
+        company : company
+      };
 
       if (search) {
         query.product = {
@@ -167,7 +176,7 @@ async function run() {
   app.get('/limited-stock/:company', async (req, res) => {
       const company = req.params.company
       const filter = {
-        company: company,
+        company: company, 
         quantity: {
           $lt: 10
         }
@@ -182,11 +191,14 @@ async function run() {
       res.send(result)
     })
     // pie chart of returnable vs non returnable asset
-    app.get('/items-statistics', async (req, res) => {
+    app.get('/items-statistics/:company', async (req, res) => {
+      const company = req.params.company
       const returnable = await reqAssets.countDocuments({
+        company: company,
         productType: 'returnable'
       })
       const nonReturnable = await reqAssets.countDocuments({
+        company: company,
         productType: 'non-returnable'
       })
       res.send({
@@ -267,12 +279,11 @@ async function run() {
       res.send(result)
     })
     // get all requested asset for the hr
-    app.get('/requested-assets', async (req, res) => {
+    app.get('/requested-assets/:company', async (req, res) => {
+      const company =req.params.company
       const search = req.query.search
       let query = {
-        $or: [{
-          status: 'pending'
-        }]
+        $or: [{ company: company, status: 'pending' }]
       };
       if (search) {
         const searchQuery = {
@@ -500,6 +511,8 @@ async function run() {
       const result = await assets.deleteOne(filter)
       res.send(result)
     })
+    // create sign up payment intent 
+    
 // create payment intent 
     app.post('/payment-intent', async(req, res)=>{
       const {price} = req.body
